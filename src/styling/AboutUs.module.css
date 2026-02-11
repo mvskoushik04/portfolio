@@ -1,0 +1,30 @@
+.home {
+  position: relative;
+  height: 100vh;
+  margin-left: 280px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 1025 x 600 adjustment */
+@media (max-width: 1025px) {
+  .home {
+    margin-left: 240px;
+  }
+}
+
+/* Mobile & Tablet */
+@media (max-width: 1024px) {
+  .home {
+    margin-left: 0;
+    padding-top: 64px;
+  }
+}
+
+.clubName {
+  color: silver;
+  font-size: 4rem;
+  text-align: center;
+}

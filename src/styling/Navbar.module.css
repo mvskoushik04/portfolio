@@ -1,0 +1,156 @@
+/* Desktop Navbar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 240px;
+  height: 92vh;
+
+  background: rgb(0, 0, 0);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  padding: 32px 24px;
+  z-index: 1000;
+}
+
+.logoContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.logo {
+  width: 120px;
+}
+
+.navbar a {
+  color: silver;
+  text-decoration: none;
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+  font-weight: 500;
+
+  padding: 10px 30px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.navbar a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ---------------- MOBILE HEADER ---------------- */
+
+.mobileHeader {
+  display: none;
+  box-sizing: border-box;
+}
+
+/* ---------------- MOBILE MENU ---------------- */
+
+.mobileMenu {
+  display: none;
+}
+
+/* ---------------- BREAKPOINTS ---------------- */
+
+/* 1025 x 600 adjustment */
+@media (max-width: 1025px) {
+  .navbar {
+    width: 240px;
+  }
+}
+
+/* Hamburger resolutions */
+@media (max-width: 1023px) {
+  .navbar {
+    display: none;
+  }
+
+  .mobileHeader {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 64px;
+
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 16px;
+    z-index: 2000;
+  }
+
+  .mobileLogo {
+    width: 42px;
+  }
+
+  .hamburger {
+    font-size: 1.8rem;
+    color: silver;
+    cursor: pointer;
+  }
+
+  .mobileMenu {
+    position: fixed;
+    inset: 0;
+
+    background: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 3000;
+  }
+
+  .mobileMenu img {
+    width: 140px;
+    margin-bottom: 40px;
+  }
+
+  .mobileMenu a {
+    color: silver;
+    font-size: 1.3rem;
+    margin-bottom: 28px;
+    text-decoration: none;
+  }
+
+  .closeBtn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+
+    font-size: 2rem;
+    color: silver;
+    cursor: pointer;
+  }
+}
+
+/* Remove blue focus outline on click/tap */
+.hamburger,
+.mobileLogo,
+.closeBtn,
+.navbar a,
+.mobileMenu a {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hamburger:focus,
+.closeBtn:focus,
+.navbar a:focus,
+.mobileMenu a:focus {
+  outline: none;
+}
