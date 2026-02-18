@@ -1,119 +1,174 @@
-import React, { useState, useRef, useEffect } from "react";
-import styles from "../styling/ChatBot.module.css";
+import React, { useState, useRef, useEffect } from 'react';
+import { sendChatMessage } from '../config/apiConfig';
+import '../styles/Chatbot.css';
 
-const ChatBot = () => {
+const Chatbot = () => {
   const [messages, setMessages] = useState([
     {
-      from: "bot",
-      text: "Hello! I'm Koushik's AI Assistant. Ask anything about Koushik's skills, projects, experience and achievements.",
-    },
+      id: 1,
+      type: 'bot',
+      text: 'Hi! I\'m Koushik\'s AI assistant. Ask me anything about Koushik!',
+      timestamp: new Date()
+    }
   ]);
-  const [input, setInput] = useState("");
+  
+  const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
-  const chatEndRef = useRef(null);
+  const [error, setError] = useState(null);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
+  // Auto-scroll to bottom of messages
   const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (e) => {
+  /**
+   * Handle sending a message
+   */
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
 
-    const userMessage = input.trim();
-    setInput("");
-    setMessages((prev) => [...prev, { from: "user", text: userMessage }]);
+    const userMessage = inputValue.trim();
+    if (!userMessage) {
+      setError('Please enter a message');
+      return;
+    }
+
+    // Clear input and error
+    setInputValue('');
+    setError(null);
+
+    // Add user message to chat
+    const userMessageObj = {
+      id: messages.length + 1,
+      type: 'user',
+      text: userMessage,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, userMessageObj]);
+
+    // Set loading state
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: userMessage }),
-      });
+      // Send message to backend
+      const response = await sendChatMessage(userMessage);
 
-      if (!response.ok) {
-        throw new Error("Failed to get response");
-      }
+      // Add bot response to chat
+      const botMessageObj = {
+        id: messages.length + 2,
+        type: 'bot',
+        text: response.reply || 'Sorry, I couldn\'t generate a response.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, botMessageObj]);
 
-      const data = await response.json();
-      setMessages((prev) => [...prev, { from: "bot", text: data.reply }]);
-    } catch (error) {
-      console.error("Error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          from: "bot",
-          text: "Sorry, I encountered an error. Please try again.",
-        },
-      ]);
+    } catch (err) {
+      console.error('Chat error:', err);
+
+      // Add error message to chat
+      const errorMessage = {
+        id: messages.length + 2,
+        type: 'error',
+        text: err.message || 'Failed to get response. Please try again.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      setError(err.message);
+
     } finally {
       setLoading(false);
+      inputRef.current?.focus();
     }
   };
 
+  /**
+   * Handle clear chat
+   */
+  const handleClearChat = () => {
+    setMessages([
+      {
+        id: 1,
+        type: 'bot',
+        text: 'Hi! I\'m Koushik\'s AI assistant. Ask me anything about Koushik!',
+        timestamp: new Date()
+      }
+    ]);
+    setError(null);
+    setInputValue('');
+  };
+
   return (
-    <div className={styles.container}>
-      <div className={styles.chatWrapper}>
-        <div className={styles.chatHeader}>
-          <span className={styles.title}>Koushik's AI Assistant</span>
-        </div>
-        <div className={styles.subtitle}>
-          
-        </div>
-        <div className={styles.chatArea}>
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={msg.from === "user" ? styles.userMsg : styles.botMsg}
-            >
-              {msg.text}
-            </div>
-          ))}
-          {loading && (
-            <div className={styles.botMsg}>
-              <span className={styles.typingIndicator}>Thinking...</span>
-            </div>
-          )}
-          <div ref={chatEndRef} />
-        </div>
-        <form className={styles.inputBar} onSubmit={handleSend}>
-          <input
-            className={styles.input}
-            type="text"
-            placeholder="Ask something about Koushik..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={loading}
-            autoFocus
-          />
-          <button
-            className={styles.sendBtn}
-            type="submit"
-            disabled={loading}
-            aria-label="Send"
-          >
-            <svg
-              width="24"
-              height="24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M22 2L11 13" />
-              <path d="M22 2L15 22L11 13L2 9L22 2Z" />
-            </svg>
-          </button>
-        </form>
+    <div className="chatbot-container">
+      <div className="chatbot-header">
+        <h2>Koushik's AI Assistant</h2>
+        <button onClick={handleClearChat} className="clear-btn" title="Clear chat">
+          🔄
+        </button>
       </div>
+
+      <div className="chatbot-messages">
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`message ${msg.type}-message`}
+          >
+            <div className="message-content">
+              <p>{msg.text}</p>
+              <span className="message-time">
+                {msg.timestamp.toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div className="message bot-message loading">
+            <div className="message-content">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {error && (
+        <div className="chatbot-error">
+          ⚠️ {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSendMessage} className="chatbot-input-form">
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Ask me something..."
+          disabled={loading}
+          className="chatbot-input"
+        />
+        <button
+          type="submit"
+          disabled={loading || !inputValue.trim()}
+          className="send-btn"
+        >
+          {loading ? '...' : '➤'}
+        </button>
+      </form>
     </div>
   );
 };
 
-export default ChatBot;
+export default Chatbot;
